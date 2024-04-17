@@ -120,6 +120,7 @@ Flags:
 ```
 prepare 64 tables:
 ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou  --oltp-tables-count=64 prepare
+#./bin/benchyou  --mysql-host=127.0.0.1 --mysql-user=root --mysql-password= --mysql-port=3307  --oltp-tables-count=16 prepare
 
 cleanup 64 tables:
 ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou  --oltp-tables-count=64 cleanup
