@@ -61,6 +61,7 @@ func (insert *Insert) Rows() uint64 {
 }
 
 // Insert used to execute the insert query.
+/*
 func (insert *Insert) Insert(worker *xworker.Worker, num int, id int) {
 	session := worker.S
 	bs := int64(math.MaxInt64) / int64(num)
@@ -73,7 +74,7 @@ func (insert *Insert) Insert(worker *xworker.Worker, num int, id int) {
 
 	for !insert.stop {
 		var sql, value string
-		buf := common.NewBuffer(256)
+		buf := common.NewBuffer(256) // TODO(gry): 放大
 
 		table := rand.Int31n(int32(worker.N))
 		if insert.conf.Random {
@@ -94,7 +95,109 @@ func (insert *Insert) Insert(worker *xworker.Worker, num int, id int) {
 					pad,
 					xcommon.RandInt64(lo, hi),
 				)
-			} else {
+			} else { // TODO(gry): SELECT LENGTH(CONCAT(current_timestamp(6), RANDOM_BYTES(486)));
+				value = fmt.Sprintf(valfmt1,
+					xcommon.RandInt64(lo, hi),
+					c,
+					pad,
+				)
+			}
+			buf.WriteString(value)
+		}
+		// -1 to trim right ','
+		vals, err := buf.ReadString(buf.Length() - 1)
+		if err != nil {
+			log.Panicf("insert.error[%v]", err)
+		}
+		sql += vals
+
+		t := time.Now()
+		// Txn start.
+		mod := worker.M.WNums % uint64(insert.conf.BatchPerCommit)
+		if insert.conf.BatchPerCommit > 1 {
+			if mod == 0 {
+				if _, err := session.Exec("begin"); err != nil {
+					log.Panicf("insert.error[%v]", err)
+				}
+			}
+		}
+		// XA start.
+		if insert.conf.XA {
+			xaStart(worker, hi, lo)
+		}
+		if _, err := session.Exec(sql); err != nil {
+			log.Panicf("insert.error[%v]", err)
+		}
+		// XA end.
+		if insert.conf.XA {
+			xaEnd(worker)
+		}
+		// Txn end.
+		if insert.conf.BatchPerCommit > 1 {
+			if mod == uint64(insert.conf.BatchPerCommit-1) {
+				if _, err := session.Exec("commit"); err != nil {
+					log.Panicf("insert.error[%v]", err)
+				}
+			}
+		}
+		elapsed := time.Since(t)
+
+		// stats
+		nsec := uint64(elapsed.Nanoseconds())
+		worker.M.WCosts += nsec
+		if worker.M.WMax == 0 && worker.M.WMin == 0 {
+			worker.M.WMax = nsec
+			worker.M.WMin = nsec
+		}
+
+		if nsec > worker.M.WMax {
+			worker.M.WMax = nsec
+		}
+		if nsec < worker.M.WMin {
+			worker.M.WMin = nsec
+		}
+		worker.M.WNums++
+		atomic.AddUint64(&insert.requests, 1)
+	}
+	insert.lock.Done()
+}
+*/
+
+// Insert used to execute the insert query.
+func (insert *Insert) Insert(worker *xworker.Worker, num int, id int) {
+	session := worker.S
+	bs := int64(math.MaxInt64) / int64(num)
+	lo := bs * int64(id)
+	hi := bs * int64(id+1)
+	columns1 := "k,c,pad"
+	columns2 := "k,c,pad,id"
+	valfmt1 := "(%v,'%s', '%s'),"
+	valfmt2 := "(%v,'%s', '%s', %v),"
+
+	for !insert.stop {
+		var sql, value string
+		buf := common.NewBuffer(256) // TODO(gry): 放大
+
+		table := rand.Int31n(int32(worker.N))
+		if insert.conf.Random {
+			sql = fmt.Sprintf("insert into benchyou%d(%s) values", table, columns2)
+		} else {
+			sql = fmt.Sprintf("insert into benchyou%d(%s) values", table, columns1)
+		}
+
+		// pack requests
+		for n := 0; n < insert.conf.RowsPerInsert; n++ {
+			pad := xcommon.RandString(xcommon.Padtemplate)
+			c := xcommon.RandString(xcommon.Ctemplate)
+
+			if insert.conf.Random {
+				value = fmt.Sprintf(valfmt2,
+					xcommon.RandInt64(lo, hi),
+					c,
+					pad,
+					xcommon.RandInt64(lo, hi),
+				)
+			} else { // TODO(gry): SELECT LENGTH(CONCAT(current_timestamp(6), RANDOM_BYTES(486)));
 				value = fmt.Sprintf(valfmt1,
 					xcommon.RandInt64(lo, hi),
 					c,

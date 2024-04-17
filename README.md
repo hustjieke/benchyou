@@ -119,11 +119,10 @@ Flags:
 
 ```
 prepare 64 tables:
-./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou  --oltp-tables-count=64 prepare
-#./bin/benchyou  --mysql-host=127.0.0.1 --mysql-user=root --mysql-password= --mysql-port=3307  --oltp-tables-count=16 prepare
+./bin/benchyou  --mysql-host=127.0.0.1 --mysql-user=root --mysql-password= --mysql-port=3307  --oltp-tables-count=16 prepare
 
 cleanup 64 tables:
-./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou  --oltp-tables-count=64 cleanup
+./bin/benchyou  --mysql-host=127.0.0.1 --mysql-user=root --mysql-password= --mysql-port=3307  --oltp-tables-count=16 cleanup
 
 random insert(Write/Read Ratio=128:8):
  ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou --ssh-user=benchyou --ssh-password=benchyou --oltp-tables-count=64 --write-threads=128 --read-threads=8 --max-time=3600 random
@@ -135,7 +134,7 @@ mix(Write/Read/Update/Delete Ratio=4:4:4:4):
  ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou --ssh-user=benchyou --ssh-password=benchyou --oltp-tables-count=64 --write-threads=4 --read-threads=4 --update-threads=4 --delete-threads=4 --max-time=3600 random
 
 insert multiple rows(10 rows per insert):
- ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou --ssh-user=benchyou --ssh-password=benchyou --oltp-tables-count=64 --write-threads=4 --rows-per-insert=10 --max-time=3600 random
+./bin/benchyou  --mysql-host=127.0.0.1 --mysql-user=root --mysql-password= --oltp-tables-count=16  --mysql-port=3307  --oltp-tables-count=16  --write-threads=4  --read-threads=0 --rows-per-insert=10 --max-time=10 random
 
 batch update(10 rows per transaction):
  ./bin/benchyou  --mysql-host=192.168.0.3 --mysql-user=benchyou --mysql-password=benchyou --ssh-user=benchyou --ssh-password=benchyou --oltp-tables-count=64 --update-threads=4 --batch-per-commit=10 --max-time=3600 random
