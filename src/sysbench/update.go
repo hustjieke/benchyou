@@ -84,7 +84,7 @@ func (update *Update) Update(worker *xworker.Worker, num int, id int) {
 		mod := worker.M.WNums % uint64(update.conf.BatchPerCommit)
 		if update.conf.BatchPerCommit > 1 {
 			if mod == 0 {
-				if err := session.Exec("begin"); err != nil {
+				if _, err := session.Exec("begin"); err != nil {
 					log.Panicf("update.error[%v]", err)
 				}
 			}
@@ -93,7 +93,7 @@ func (update *Update) Update(worker *xworker.Worker, num int, id int) {
 		if update.conf.XA {
 			xaStart(worker, hi, lo)
 		}
-		if err := session.Exec(sql); err != nil {
+		if _, err := session.Exec(sql); err != nil {
 			log.Panicf("update.error[%v]", err)
 		}
 		// XA end.
@@ -103,7 +103,7 @@ func (update *Update) Update(worker *xworker.Worker, num int, id int) {
 		// Txn end.
 		if update.conf.BatchPerCommit > 1 {
 			if mod == uint64(update.conf.BatchPerCommit-1) {
-				if err := session.Exec("commit"); err != nil {
+				if _, err := session.Exec("commit"); err != nil {
 					log.Panicf("update.error[%v]", err)
 				}
 			}

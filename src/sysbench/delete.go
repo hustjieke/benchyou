@@ -83,7 +83,7 @@ func (delete *Delete) Delete(worker *xworker.Worker, num int, id int) {
 		mod := worker.M.WNums % uint64(delete.conf.BatchPerCommit)
 		if delete.conf.BatchPerCommit > 1 {
 			if mod == 0 {
-				if err := session.Exec("begin"); err != nil {
+				if _, err := session.Exec("begin"); err != nil {
 					log.Panicf("delete.error[%v]", err)
 				}
 			}
@@ -92,7 +92,7 @@ func (delete *Delete) Delete(worker *xworker.Worker, num int, id int) {
 		if delete.conf.XA {
 			xaStart(worker, hi, lo)
 		}
-		if err := session.Exec(sql); err != nil {
+		if _, err := session.Exec(sql); err != nil {
 			log.Panicf("delete.error[%v]", err)
 		}
 		// XA end.
@@ -102,7 +102,7 @@ func (delete *Delete) Delete(worker *xworker.Worker, num int, id int) {
 		// Txn end.
 		if delete.conf.BatchPerCommit > 1 {
 			if mod == uint64(delete.conf.BatchPerCommit-1) {
-				if err := session.Exec("commit"); err != nil {
+				if _, err := session.Exec("commit"); err != nil {
 					log.Panicf("delete.error[%v]", err)
 				}
 			}

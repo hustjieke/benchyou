@@ -10,11 +10,12 @@
 package xworker
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"xcommon"
 
-	"github.com/xelabs/go-mysqlstack/driver"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Metric tuple.
@@ -32,7 +33,7 @@ type Metric struct {
 // Worker tuple.
 type Worker struct {
 	// session
-	S driver.Conn
+	S *sql.DB
 
 	// mertric
 	M *Metric
@@ -50,13 +51,19 @@ type Worker struct {
 // CreateWorkers creates the new workers.
 func CreateWorkers(conf *xcommon.Conf, threads int) []Worker {
 	var workers []Worker
-	var conn driver.Conn
+	var conn *sql.DB
 	var err error
 
-	utf8 := "utf8"
-	dsn := fmt.Sprintf("%s:%d", conf.MysqlHost, conf.MysqlPort)
+	// utf8 := "utf8"
+	// dsn := fmt.Sprintf("%s:%d", conf.MysqlHost, conf.MysqlPort)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", conf.MysqlUser, conf.MysqlPassword, conf.MysqlHost, conf.MysqlPort, conf.MysqlDb)
+	log.Printf("dataSourceName: %s", dataSourceName)
+
 	for i := 0; i < threads; i++ {
-		if conn, err = driver.NewConn(conf.MysqlUser, conf.MysqlPassword, dsn, conf.MysqlDb, utf8); err != nil {
+
+		// if conn, err := driver.NewConn(conf.MysqlUser, conf.MysqlPassword, dsn, conf.MysqlDb, utf8); err != nil {
+		// TODO: rm hard code
+		if conn, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3307)/sbtest"); err != nil {
 			log.Panicf("create.worker.error:%v", err)
 		}
 		workers = append(workers, Worker{

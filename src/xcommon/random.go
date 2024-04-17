@@ -20,7 +20,7 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-// RandInt64 rands the int65 between min and max.
+// RandInt64 rands the int64 between min and max.
 func RandInt64(min int64, max int64) int64 {
 	return min + int64(rand.Int63n(int64(max-min)))
 }
