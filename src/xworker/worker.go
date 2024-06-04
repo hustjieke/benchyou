@@ -63,7 +63,7 @@ func CreateWorkers(conf *xcommon.Conf, threads int) []Worker {
 
 		// if conn, err := driver.NewConn(conf.MysqlUser, conf.MysqlPassword, dsn, conf.MysqlDb, utf8); err != nil {
 		// TODO: rm hard code
-		if conn, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3307)/sbtest"); err != nil {
+		if conn, err = sql.Open("mysql", dataSourceName); err != nil {
 			log.Panicf("create.worker.error:%v", err)
 		}
 		workers = append(workers, Worker{

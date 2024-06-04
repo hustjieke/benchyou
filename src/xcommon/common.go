@@ -15,4 +15,7 @@ var (
 
 	// Padtemplate is the default template for pad.
 	Padtemplate = "###########-###########-###########-###########-###########"
+
+	// car number
+	Cartemplate = "#######"
 )

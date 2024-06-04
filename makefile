@@ -3,8 +3,8 @@ export PATH := $(GOPATH)/bin:$(PATH)
 
 build:
 	@echo "--> go get..."
-	go get github.com/xelabs/go-mysqlstack/driver
-	go get github.com/go-sql-driver/mysql
+	#go get github.com/xelabs/go-mysqlstack/driver
+	#go get github.com/go-sql-driver/mysql
 
 	@echo "--> Building..."
 	@mkdir -p bin/
